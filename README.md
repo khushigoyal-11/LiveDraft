@@ -45,34 +45,30 @@ LiveDraft is a powerful real-time collaborative document editor that allows mult
 
 1. Clone the Repository
 
-git clone https://github.com/khushigoyal-11/LiveDraft.git
-cd LiveDraft
+   git clone https://github.com/khushigoyal-11/LiveDraft.git
+   cd LiveDraft
 
 2. Install Frontend & Backend Dependencies
 
-cd client
-npm install
-cd ../server
-npm install
+   cd client
+   npm install
+   cd ../server
+   npm install
 
 3. Create .env files
 
-Create .env files in both client/ and server/ as per your local setup
+   Create .env files in both client/ and server/ as per your local setup
 
 4. Run Backend
 
-cd server
-npm install
-node index.js
+   cd server
+   npm install
+   node index.js
 
 5. Run Frontend
 
-cd client
-npm install
-npm start
+   cd client
+   npm install
+   npm start
 
 
-📷 UI Preview
-
-![Home page](image.png)
-![Editor page](image-1.png)
