@@ -1,3 +1,5 @@
+# LiveDraft – Real-Time Collaborative Document Editor
+
 LiveDraft is a powerful real-time collaborative document editor that allows multiple users to simultaneously work on a shared document. Designed with a modern tech stack — React.js, Node.js, Express.js, WebSocket (Socket.IO), and MongoDB — the platform delivers a fast, responsive, and synchronized editing experience.
 
 
@@ -24,7 +26,7 @@ LiveDraft is a powerful real-time collaborative document editor that allows mult
 |------------|-------------|
 | **Frontend** | React.js, Tailwind CSS |
 | **Backend**  | Node.js, Express.js |
-| **Database** | MongoDB (Cloud/Local) |
+| **Database** | MongoDB  |
 | **Real-Time** | WebSocket (Socket.IO) |
 | **Version Control** | Git & GitHub |
 
@@ -46,6 +48,8 @@ LiveDraft is a powerful real-time collaborative document editor that allows mult
 1. Clone the Repository
 
    git clone https://github.com/khushigoyal-11/LiveDraft.git
+
+   
    cd LiveDraft
 
 2. Install Frontend & Backend Dependencies
