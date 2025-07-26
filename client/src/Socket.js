@@ -1,13 +1,7 @@
 import { io } from "socket.io-client";
 
+const socket = io(process.env.REACT_APP_BACKEND_URL, {
+  transports: ["websocket"],
+});
 
-export const initSocket = async () => {
-  const options = {
-    "force new connection": true,
-    reconnectionAttempts: "Infinity",
-    timeout: 10000,
-    transports: ["websocket"],
-  };
-  return io(process.env.REACT_APP_BACKEND_URL, options);
-};
-
+export default socket;

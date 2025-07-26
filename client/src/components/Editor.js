@@ -44,19 +44,28 @@ function Editor({ socketRef, roomId, onCodeChange }) {
       });
 
       // Fetch initial code from MongoDB
-      try {
-        const response = await axios.get(
-  `${process.env.REACT_APP_BACKEND_URL}/download/${roomId}`
-);
+      // Fetch initial code from MongoDB
+try {
+  console.log("roomId is:", roomId); // ✅ DEBUG
 
-        if (response.status === 200 && response.data) {
-          editor.setValue(response.data); // Set the pre-written code in the editor
-        } else {
-          console.log("Room does not exist or has no pre-written code.");
-        }
-      } catch (err) {
-        console.error("Error fetching code:", err);
-      }
+  if (!roomId) {
+    console.error("❌ Missing roomId!");
+    return;
+  }
+
+  const response = await axios.get(
+    `${process.env.REACT_APP_BACKEND_URL}/download/${roomId}`
+  );
+
+  if (response.status === 200 && response.data) {
+    editor.setValue(response.data); // Set the pre-written code in the editor
+  } else {
+    console.log("Room does not exist or has no pre-written code.");
+  }
+} catch (err) {
+  console.error("Error fetching code:", err);
+}
+
     };
 
     init();

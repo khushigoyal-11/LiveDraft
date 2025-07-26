@@ -17,6 +17,7 @@ function EditorPage() {
   const Location = useLocation();
   const navigate = useNavigate();
   const { roomId } = useParams();
+  console.log("EditorPage roomId:", roomId);
 
   const handleDownload = () => {
     navigate(`/download/${roomId}`);
