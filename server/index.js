@@ -8,6 +8,12 @@ import ACTIONS from "./Actions.js";
 
 dotenv.config();
 
+// Ensure MONGO_URI is set
+if (!process.env.MONGO_URI) {
+  console.error("❌ ERROR: MONGO_URI is undefined. Please set MONGO_URI in your Render environment variables.");
+  process.exit(1);
+}
+
 const app = express();
 const server = http.createServer(app);
 
