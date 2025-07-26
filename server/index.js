@@ -48,8 +48,22 @@ const Code = mongoose.model("Code", CodeSchema);
 // Download route
 app.get("/download/:roomId", async (req, res) => {
   const { roomId } = req.params;
+  console.log("🔍 Download route hit for roomId:", roomId);
   try {
     const roomData = await Code.findOne({ roomId });
+    if (roomData) {
+      res.setHeader("Content-Disposition", "attachment; filename=text.txt");
+      res.setHeader("Content-Type", "text/plain");
+      return res.send(roomData.code);
+    } else {
+      console.log("⚠️ Room not found in database:", roomId);
+      return res.status(404).send("Room not found");
+    }
+  } catch (err) {
+    console.error("🚨 Error fetching code from MongoDB for roomId", roomId, ":", err);
+    return res.status(500).send("Internal Server Error");
+  }
+});
     if (roomData) {
       res.setHeader("Content-Disposition", "attachment; filename=text.txt");
       res.setHeader("Content-Type", "text/plain");
