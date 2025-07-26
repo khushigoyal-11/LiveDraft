@@ -19,7 +19,7 @@ app.get("/ping", (_req, res) => {
   return res.json({ ok: true, timestamp: new Date().toISOString() });
 });
 
-// Enable CORS for local and deployed frontend
+// CORS and JSON parsing
 app.use(express.json());
 app.use(
   cors({
@@ -32,20 +32,20 @@ app.use(
   })
 );
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Mongoose schema & model
+// Define Mongoose Schema and Model
 const CodeSchema = new mongoose.Schema({
   roomId: { type: String, required: true, unique: true },
   code: { type: String, default: "" },
 });
 const Code = mongoose.model("Code", CodeSchema);
 
-// Download route
+// Endpoint to fetch code by roomId
 app.get("/download/:roomId", async (req, res) => {
   const { roomId } = req.params;
   console.log("🔍 Download route hit for roomId:", roomId);
@@ -56,23 +56,11 @@ app.get("/download/:roomId", async (req, res) => {
       res.setHeader("Content-Type", "text/plain");
       return res.send(roomData.code);
     } else {
-      console.log("⚠️ Room not found in database:", roomId);
+      console.warn("⚠️ Room not found in database:", roomId);
       return res.status(404).send("Room not found");
     }
   } catch (err) {
     console.error("🚨 Error fetching code from MongoDB for roomId", roomId, ":", err);
-    return res.status(500).send("Internal Server Error");
-  }
-});
-    if (roomData) {
-      res.setHeader("Content-Disposition", "attachment; filename=text.txt");
-      res.setHeader("Content-Type", "text/plain");
-      return res.send(roomData.code);
-    } else {
-      return res.status(404).send("Room not found");
-    }
-  } catch (err) {
-    console.error("Error fetching code from MongoDB:", err);
     return res.status(500).send("Internal Server Error");
   }
 });
