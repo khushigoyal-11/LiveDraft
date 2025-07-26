@@ -1,14 +1,14 @@
+// Socket.js
 import { io } from "socket.io-client";
 
-export const initSocket = async () => {
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+export const initSocket = () => {
   const options = {
     transports: ["websocket"],
-    forceNew: true,
-    reconnectionAttempts: 5,
+    reconnectionAttempts: 3,
     timeout: 10000,
+    forceNew: true,
   };
-
-  const socket = io(process.env.REACT_APP_BACKEND_URL, options);
-
-  return socket;
+  return io(BACKEND_URL, options);
 };
