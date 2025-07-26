@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
-import ACTIONS from "./Actions";
+import ACTIONS from "./Actions.js";
 
 dotenv.config();
 
