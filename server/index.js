@@ -10,7 +10,11 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: ['https://livedraft-1.onrender.com'], // your frontend Render URL
+  methods: ['GET', 'POST'],
+  credentials: true,
+}));
 app.use(express.json());
 
 // MongoDB connection
@@ -51,8 +55,9 @@ app.get("/download/:roomId", async (req, res) => {
 // Setup socket.io
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:5000"],
+    origin: ["https://livedraft-1.onrender.com"],
     methods: ["GET", "POST"],
+    credentials: true
   },
 });
 
