@@ -1,40 +1,51 @@
-const express = require("express");
+import express from "express";
+import http from "http";
+import cors from "cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { Server } from "socket.io";
+import ACTIONS from "./Actions";
+
+dotenv.config();
+
 const app = express();
-const http = require("http");
-const { Server } = require("socket.io");
-const ACTIONS = require("./Actions");
-const cors = require("cors");
-const axios = require("axios");
 const server = http.createServer(app);
-const mongoose = require("mongoose");
-require("dotenv").config();
 
-// Enable CORS
-app.use(cors({
-  origin: ['https://livedraft-1.onrender.com'], // your frontend Render URL
-  methods: ['GET', 'POST'],
-  credentials: true,
-}));
+// DEBUG: Log the Mongo URI
+console.log("▶️ MONGO_URI:", process.env.MONGO_URI);
+
+// Health check endpoint
+app.get("/ping", (_req, res) => {
+  return res.json({ ok: true, timestamp: new Date().toISOString() });
+});
+
+// Enable CORS for local and deployed frontend
 app.use(express.json());
-
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://livedraft-1.onrender.com"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true,
   })
+);
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Define Mongoose Schema and Model
+// Mongoose schema & model
 const CodeSchema = new mongoose.Schema({
   roomId: { type: String, required: true, unique: true },
   code: { type: String, default: "" },
 });
-
 const Code = mongoose.model("Code", CodeSchema);
 
-// Endpoint to fetch code by roomId
+// Download route
 app.get("/download/:roomId", async (req, res) => {
   const { roomId } = req.params;
   try {
@@ -42,56 +53,50 @@ app.get("/download/:roomId", async (req, res) => {
     if (roomData) {
       res.setHeader("Content-Disposition", "attachment; filename=text.txt");
       res.setHeader("Content-Type", "text/plain");
-      res.send(roomData.code);
+      return res.send(roomData.code);
     } else {
-      res.status(404).send("Room not found");
+      return res.status(404).send("Room not found");
     }
   } catch (err) {
     console.error("Error fetching code from MongoDB:", err);
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 });
 
-// Setup socket.io
+// Setup Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: ["https://livedraft-1.onrender.com"],
+    origin: [
+      "http://localhost:3000",
+      "https://livedraft-1.onrender.com"
+    ],
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
 });
 
 const userSocketMap = {};
-const getAllConnectedClients = (roomId) => {
-  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
-    (socketId) => ({
-      socketId,
-      username: userSocketMap[socketId],
-    })
-  );
-};
+const getAllConnectedClients = (roomId) =>
+  Array.from(io.sockets.adapter.rooms.get(roomId) || []).map((socketId) => ({
+    socketId,
+    username: userSocketMap[socketId],
+  }));
 
-// Socket.io connection handling
 io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
   socket.on(ACTIONS.JOIN, async ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     socket.join(roomId);
 
     try {
-      const existingRoom = await Code.findOne({ roomId });
-      if (!existingRoom) {
-        await Code.create({ roomId, code: "" }); // Create a new room with empty code
+      let room = await Code.findOne({ roomId });
+      if (!room) {
+        room = await Code.create({ roomId, code: "" });
       }
-      // Fetch the existing code for the room
-      const roomData = await Code.findOne({ roomId });
-      const code = roomData?.code
-      
-      || "";
-
-      // Send the existing code to the newly joined user
+      const code = room.code || "";
       socket.emit(ACTIONS.CODE_CHANGE, { code });
 
-      // Notify other clients in the room about the new user
       const clients = getAllConnectedClients(roomId);
       clients.forEach(({ socketId }) => {
         io.to(socketId).emit(ACTIONS.JOINED, {
@@ -107,14 +112,8 @@ io.on("connection", (socket) => {
 
   socket.on(ACTIONS.CODE_CHANGE, async ({ roomId, code }) => {
     socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
-
-    // Save code changes to MongoDB
     try {
-      await Code.findOneAndUpdate(
-        { roomId },
-        { code },
-        { upsert: true, new: true }
-      );
+      await Code.findOneAndUpdate({ roomId }, { code }, { upsert: true, new: true });
     } catch (err) {
       console.error("Error saving code to MongoDB:", err);
     }
@@ -128,11 +127,11 @@ io.on("connection", (socket) => {
         username: userSocketMap[socket.id],
       });
     });
-
     delete userSocketMap[socket.id];
     socket.leave();
   });
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
