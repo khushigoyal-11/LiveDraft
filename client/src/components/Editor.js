@@ -46,8 +46,9 @@ function Editor({ socketRef, roomId, onCodeChange }) {
       // Fetch initial code from MongoDB
       try {
         const response = await axios.get(
-          `http://localhost:5000/download/${roomId}`
-        );
+  `${process.env.REACT_APP_BACKEND_URL}/download/${roomId}`
+);
+
         if (response.status === 200 && response.data) {
           editor.setValue(response.data); // Set the pre-written code in the editor
         } else {
